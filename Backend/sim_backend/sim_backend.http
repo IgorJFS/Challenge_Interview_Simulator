@@ -1,0 +1,6 @@
+@sim_backend_HostAddress = http://localhost:5138
+
+GET {{sim_backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
