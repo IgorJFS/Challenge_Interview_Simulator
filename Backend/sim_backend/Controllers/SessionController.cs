@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using sim_backend.Dtos;
 using sim_backend.Services;
 
@@ -24,6 +24,8 @@ public class SessionController : ControllerBase
             SessionId = session.SessionId,
             JobRole = session.JobRole,
             BuggyCode = session.BuggyCode,
+            FixedCode = session.FixedCode,
+            BugExplanation = session.BugExplanation,
             IsActive = session.IsActive,
             CreatedAt = session.CreatedAt
         });
@@ -40,6 +42,8 @@ public class SessionController : ControllerBase
             SessionId = session.SessionId,
             JobRole = session.JobRole,
             BuggyCode = session.BuggyCode,
+            FixedCode = session.FixedCode,
+            BugExplanation = session.BugExplanation,
             IsActive = session.IsActive,
             CreatedAt = session.CreatedAt
         });

@@ -15,7 +15,14 @@ interface Session {
 export default function CandidateSession() {
   const { sessionId } = useParams<{ sessionId: string }>()
   const [session, setSession] = useState<Session | null>(null)
-  const [stage, setStage] = useState<1 | 2>(1)
+  
+  // Persist active stage in localStorage to survive browser refreshes
+  const getInitialStage = (): 1 | 2 => {
+    const saved = localStorage.getItem(`session_stage_${sessionId}`)
+    return saved === '2' ? 2 : 1
+  }
+
+  const [stage, setStage] = useState<1 | 2>(getInitialStage)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -44,10 +51,15 @@ export default function CandidateSession() {
     </div>
   )
 
+  const handleTransitionToStage2 = () => {
+    localStorage.setItem(`session_stage_${session.sessionId}`, '2')
+    setStage(2)
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {stage === 1
-        ? <Stage1CodeEditor session={session} onTimeUp={() => setStage(2)} onSubmit={() => setStage(2)} />
+        ? <Stage1CodeEditor session={session} onTimeUp={handleTransitionToStage2} onSubmit={handleTransitionToStage2} />
         : <Stage2Workspace sessionId={session.sessionId} />
       }
     </div>
