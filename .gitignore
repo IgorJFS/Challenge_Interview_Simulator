@@ -1,0 +1,94 @@
+# ==========================================
+# dotnet / C# (Backend)
+# ==========================================
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+bld/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.mono
+
+# Rider / Resharper
+.idea/
+*.sln.iml
+
+# Visual Studio / Visual Studio Code
+.vs/
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local Configuration / Secrets
+appsettings.Development.json
+appsettings.Local.json
+appsettings.local.json
+*.secrets.json
+.env
+.env.*
+!.env.example
+
+# ==========================================
+# Node.js / React (Frontend)
+# ==========================================
+
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Build and distribution directories
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Testing
+coverage/
+.nyc_output
+
+# Linters/formatters
+.eslintcache
+
+# Vite
+.vite/
+
+# ==========================================
+# OS / System Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

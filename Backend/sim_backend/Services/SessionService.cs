@@ -1,64 +1,59 @@
-﻿using System.Text;
+﻿using Microsoft.EntityFrameworkCore;
+using sim_backend.Data;
+using sim_backend.Dtos;
+using sim_backend.Models;
+using System.Text;
 using System.Text.Json;
 
 namespace sim_backend.Services;
 
-public class GeminiService
+public class SessionService
 {
-    private readonly HttpClient _httpClient;
-    private readonly string _apiKey;
+    private readonly AppDbContext _db;
+    private readonly GeminiService _geminiService;
 
-    public GeminiService(HttpClient httpClient, IConfiguration configuration)
+    public SessionService(AppDbContext db, GeminiService geminiService)
     {
-        _httpClient = httpClient;
-        _apiKey = configuration["Gemini:ApiKey"] ?? throw new Exception("Gemini API key not found");
+        _db = db;
+        _geminiService = geminiService;
     }
 
-    public async Task<(string BuggyCode, string FixedCode, string BugExplanation)> GenerateBugChallengeAsync(string jobRole)
+    public async Task<Session> CreateSessionAsync(string jobRole)
     {
-        var prompt = $"""
-            Generate a small JavaScript code snippet with an intentional bug appropriate for a '{jobRole}' position.
-            Return ONLY a JSON object with exactly these three fields:
-            - buggy_code: the code with the bug
-            - fixed_code: the corrected code
-            - bug_explanation: a clear explanation of what the bug is and why it happens
-            No markdown, no extra text, just the raw JSON object.
-            """;
+        var (buggyCode, fixedCode, bugExplanation) = await _geminiService.GenerateBugChallengeAsync(jobRole);
 
-        var requestBody = new
+        var session = new Session
         {
-            contents = new[]
-            {
-                new { parts = new[] { new { text = prompt } } }
-            }
+            SessionId = Guid.NewGuid(),
+            JobRole = jobRole,
+            BuggyCode = buggyCode,
+            FixedCode = fixedCode,
+            BugExplanation = bugExplanation,
+            CreatedAt = DateTime.UtcNow,
+            IsActive = true
         };
 
-        var json = JsonSerializer.Serialize(requestBody);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        _db.Sessions.Add(session);
+        await _db.SaveChangesAsync();
 
-        var response = await _httpClient.PostAsync(
-            $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_apiKey}",
-            content);
+        return session;
+    }
 
-        response.EnsureSuccessStatusCode();
+    public async Task<Session?> GetSessionAsync(Guid sessionId)
+    {
+        return await _db.Sessions
+            .Include(s => s.Submissions)
+            .Include(s => s.ChatMessages)
+            .FirstOrDefaultAsync(s => s.SessionId == sessionId);
+    }
 
-        var responseString = await response.Content.ReadAsStringAsync();
-        var responseJson = JsonDocument.Parse(responseString);
-
-        var text = responseJson
-            .RootElement
-            .GetProperty("candidates")[0]
-            .GetProperty("content")
-            .GetProperty("parts")[0]
-            .GetProperty("text")
-            .GetString() ?? throw new Exception("Empty response from Gemini");
-
-        var result = JsonSerializer.Deserialize<JsonElement>(text);
-
-        return (
-            result.GetProperty("buggy_code").GetString() ?? "",
-            result.GetProperty("fixed_code").GetString() ?? "",
-            result.GetProperty("bug_explanation").GetString() ?? ""
-        );
+    public async Task DeleteSessionAsync(Guid sessionId)
+    {
+        var session = await _db.Sessions.FindAsync(sessionId);
+        if (session is not null)
+        {
+            _db.Sessions.Remove(session);
+            await _db.SaveChangesAsync();
+        }
     }
 }
