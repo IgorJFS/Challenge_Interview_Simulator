@@ -1,6 +1,8 @@
 # Interview Challenge Simulator
 
-A technical interview tool that goes beyond LeetCode. Instead of abstract puzzles, candidates face a real bug in a real codebase — and are evaluated not only on their ability to fix it, but on how they communicate under pressure.
+A technical interview tool that goes beyond LeetCode. Instead of abstract puzzles, candidates face a real bug in a real codebase, and are evaluated not only on their ability to fix it, but on how they communicate under pressure.
+
+**Stack used: React, C#, .NET 10, TypeScript, Node.js, Entity Framework Core, ASP.NET Core, SQL Server, Google Gemini, Docker**
 
 ---
 
