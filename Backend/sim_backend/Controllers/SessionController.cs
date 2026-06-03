@@ -18,11 +18,12 @@ public class SessionController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateSession([FromBody] CreateSessionRequest request)
     {
-        var session = await _sessionService.CreateSessionAsync(request.JobRole);
+        var session = await _sessionService.CreateSessionAsync(request.JobRole, request.Language);
         return Ok(new SessionResponse
         {
             SessionId = session.SessionId,
             JobRole = session.JobRole,
+            Language = session.Language,
             BuggyCode = session.BuggyCode,
             FixedCode = session.FixedCode,
             BugExplanation = session.BugExplanation,
@@ -41,6 +42,7 @@ public class SessionController : ControllerBase
         {
             SessionId = session.SessionId,
             JobRole = session.JobRole,
+            Language = session.Language,
             BuggyCode = session.BuggyCode,
             FixedCode = session.FixedCode,
             BugExplanation = session.BugExplanation,

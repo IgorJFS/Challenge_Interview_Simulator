@@ -12,6 +12,15 @@ const JOB_ROLES = [
   { id: 'Game Dev Senior', name: 'Game Dev Senior', category: 'Game Dev', icon: 'gamepad' },
 ]
 
+const LANGUAGES = [
+  { id: 'JavaScript', name: 'JavaScript', extension: 'js' },
+  { id: 'TypeScript', name: 'TypeScript', extension: 'ts' },
+  { id: 'Python', name: 'Python', extension: 'py' },
+  { id: 'CSharp', name: 'C#', extension: 'cs' },
+  { id: 'Java', name: 'Java', extension: 'java' },
+  { id: 'Go', name: 'Go', extension: 'go' },
+]
+
 interface Submission {
   candidateCode: string
   candidateExplanation: string
@@ -37,6 +46,8 @@ export default function InterviewerDashboard() {
   const [timerStage, setTimerStage] = useState<1 | 2>(1)
   const [fixedCode, setFixedCode] = useState('')
   const [bugExplanation, setBugExplanation] = useState('')
+  const [selectedLanguage, setSelectedLanguage] = useState(LANGUAGES[0].id)
+  const [sessionLanguage, setSessionLanguage] = useState('JavaScript')
 
   useEffect(() => {
     if (!sessionId) return
@@ -95,10 +106,11 @@ export default function InterviewerDashboard() {
   const handleCreateSession = async () => {
     setLoading(true)
     try {
-      const response = await createSession(selectedRole)
+      const response = await createSession(selectedRole, selectedLanguage)
       setSessionId(response.data.sessionId)
       setFixedCode(response.data.fixedCode || '')
       setBugExplanation(response.data.bugExplanation || '')
+      setSessionLanguage(response.data.language || 'JavaScript')
     } catch {
       alert('Error creating session.')
     } finally {
@@ -115,6 +127,7 @@ export default function InterviewerDashboard() {
     setTimerStage(1)
     setFixedCode('')
     setBugExplanation('')
+    setSessionLanguage('JavaScript')
   }
 
   const handleCopyLink = () => {
@@ -128,6 +141,17 @@ export default function InterviewerDashboard() {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0')
     const s = (seconds % 60).toString().padStart(2, '0')
     return `${m}:${s}`
+  }
+
+  const getFileExtension = (lang: string) => {
+    switch (lang.toLowerCase()) {
+      case 'python': return 'py';
+      case 'csharp': return 'cs';
+      case 'typescript': return 'ts';
+      case 'java': return 'java';
+      case 'go': return 'go';
+      default: return 'js';
+    }
   }
 
   const candidateLink = sessionId
@@ -270,6 +294,37 @@ export default function InterviewerDashboard() {
                           {role.name}
                         </span>
                       </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <label className="text-xs font-semibold text-indigo-400 tracking-wider uppercase">
+                Select Programming Language
+              </label>
+              
+              <div className="grid grid-cols-3 gap-3">
+                {LANGUAGES.map(lang => {
+                  const isSelected = selectedLanguage === lang.id
+                  return (
+                    <button
+                      key={lang.id}
+                      onClick={() => setSelectedLanguage(lang.id)}
+                      className={`flex items-center justify-between px-4 py-3.5 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden group ${
+                        isSelected
+                          ? 'bg-linear-to-r from-indigo-950/50 to-purple-950/50 border-indigo-500/80 text-white shadow-lg shadow-indigo-950/40'
+                          : 'bg-slate-800/20 border-white/4 text-slate-400 hover:bg-slate-800/40 hover:border-white/8 hover:text-slate-200'
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="absolute inset-0 bg-indigo-500/2 pointer-events-none" />
+                      )}
+                      <span className="font-bold text-sm tracking-tight">{lang.name}</span>
+                      <span className="text-[10px] text-indigo-400/80 font-bold font-mono bg-slate-850 px-2 py-0.5 rounded border border-white/10 uppercase">
+                        .{lang.extension}
+                      </span>
                     </button>
                   )
                 })}
@@ -467,9 +522,9 @@ export default function InterviewerDashboard() {
                             <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
                             <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                            <span className="text-xs text-slate-500 font-mono ml-2">candidate_solution.js</span>
+                            <span className="text-xs text-slate-500 font-mono ml-2">candidate_solution.{getFileExtension(sessionLanguage)}</span>
                           </div>
-                          <span className="text-[10px] text-slate-600 font-mono">Candidate Code</span>
+                          <span className="text-[10px] text-slate-600 font-mono">{sessionLanguage}</span>
                         </div>
                         
                         <div className="p-4 font-mono text-[13px] overflow-x-auto text-indigo-200/90 leading-relaxed bg-slate-950/90 max-h-72 flex-1">
@@ -506,9 +561,9 @@ export default function InterviewerDashboard() {
                             <span className="w-2.5 h-2.5 rounded-full bg-slate-700" />
                             <span className="w-2.5 h-2.5 rounded-full bg-slate-700" />
                             <span className="w-2.5 h-2.5 rounded-full bg-[#23a55a]" />
-                            <span className="text-xs text-indigo-400/70 font-mono ml-2">ideal_solution.js</span>
+                            <span className="text-xs text-indigo-400/70 font-mono ml-2">ideal_solution.{getFileExtension(sessionLanguage)}</span>
                           </div>
-                          <span className="text-[10px] text-indigo-400 font-mono">Reference Code</span>
+                          <span className="text-[10px] text-indigo-400 font-mono">Ideal {sessionLanguage}</span>
                         </div>
                         
                         <div className="p-4 font-mono text-[13px] overflow-x-auto text-emerald-200/90 leading-relaxed bg-slate-950/95 max-h-72 flex-1">

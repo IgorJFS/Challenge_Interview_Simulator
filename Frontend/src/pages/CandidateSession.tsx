@@ -10,6 +10,7 @@ interface Session {
   buggyCode: string
   isActive: boolean
   createdAt: string
+  language?: string
 }
 
 export default function CandidateSession() {

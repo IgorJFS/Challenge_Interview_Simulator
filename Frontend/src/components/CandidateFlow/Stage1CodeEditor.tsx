@@ -4,10 +4,23 @@ import { submitSolution } from '../../services/api'
 
 const TIMER_SECONDS = 10 * 60
 
+const getFileExtension = (lang?: string) => {
+  if (!lang) return 'js';
+  switch (lang.toLowerCase()) {
+    case 'python': return 'py';
+    case 'csharp': return 'cs';
+    case 'typescript': return 'ts';
+    case 'java': return 'java';
+    case 'go': return 'go';
+    default: return 'js';
+  }
+}
+
 interface Session {
   sessionId: string
   jobRole: string
   buggyCode: string
+  language?: string
 }
 
 interface Props {
@@ -176,7 +189,7 @@ export default function Stage1CodeEditor({ session, onTimeUp, onSubmit }: Props)
               <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
               </svg>
-              <span>challenge.js</span>
+              <span>challenge.{getFileExtension(session.language)}</span>
               <span className="w-1.5 h-1.5 rounded-full bg-slate-500/60 ml-1.5" />
             </div>
             
@@ -188,7 +201,7 @@ export default function Stage1CodeEditor({ session, onTimeUp, onSubmit }: Props)
             <div className="h-full rounded-2xl overflow-hidden border border-white/5 shadow-inner">
               <Editor
                 height="100%"
-                defaultLanguage="javascript"
+                language={session.language ? session.language.toLowerCase() : "javascript"}
                 value={code}
                 onChange={value => {
                   const val = value ?? ''
@@ -243,7 +256,7 @@ export default function Stage1CodeEditor({ session, onTimeUp, onSubmit }: Props)
             </div>
             
             <p className="text-xs text-slate-400 leading-relaxed">
-              Carefully analyze the JavaScript code on the left. There is an intentional logical bug that prevents its ideal execution.
+              Carefully analyze the {session.language || 'JavaScript'} code on the left. There is an intentional logical bug that prevents its ideal execution.
             </p>
             <ul className="mt-3 space-y-2 text-[11px] text-slate-400 font-medium">
               <li className="flex items-start gap-2">

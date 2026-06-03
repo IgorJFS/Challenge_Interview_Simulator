@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using sim_backend.Data;
 using sim_backend.Dtos;
 using sim_backend.Models;
@@ -18,14 +18,15 @@ public class SessionService
         _geminiService = geminiService;
     }
 
-    public async Task<Session> CreateSessionAsync(string jobRole)
+    public async Task<Session> CreateSessionAsync(string jobRole, string language)
     {
-        var (buggyCode, fixedCode, bugExplanation) = await _geminiService.GenerateBugChallengeAsync(jobRole);
+        var (buggyCode, fixedCode, bugExplanation) = await _geminiService.GenerateBugChallengeAsync(jobRole, language);
 
         var session = new Session
         {
             SessionId = Guid.NewGuid(),
             JobRole = jobRole,
+            Language = language,
             BuggyCode = buggyCode,
             FixedCode = fixedCode,
             BugExplanation = bugExplanation,

@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 
 namespace sim_backend.Services;
@@ -14,12 +14,21 @@ public class GeminiService
         _apiKey = configuration["Gemini:ApiKey"] ?? throw new Exception("Gemini API key not found");
     }
 
-    public async Task<(string BuggyCode, string FixedCode, string BugExplanation)> GenerateBugChallengeAsync(string jobRole)
+    public async Task<(string BuggyCode, string FixedCode, string BugExplanation)> GenerateBugChallengeAsync(string jobRole, string language)
     {
         var prompt = $"""
-            Generate a small JavaScript code snippet with an intentional bug appropriate for a '{jobRole}' position.
+            Generate a small {language} code snippet with an intentional bug appropriate for a '{jobRole}' position.
+            
+            IMPORTANT:
+            At the very first line of the 'buggy_code', you MUST include a single-line comment in the language's native comment syntax (e.g., '//' for JS/C#/Java/TS, '#' for Python) in English describing the symptom of the bug and asking the candidate how to solve it.
+            Examples:
+            - // The output in this example returns undefined, why and how to solve?
+            - // This code is causing a memory leak, why and how to solve?
+            - // This function throws an unhandled NullReferenceException, why and how to solve?
+            Keep the comment concise, simple, and direct.
+
             Return ONLY a JSON object with exactly these three fields:
-            - buggy_code: the code with the bug
+            - buggy_code: the code with the bug (containing the symptom comment at the very first line)
             - fixed_code: the corrected code
             - bug_explanation: a clear explanation of what the bug is and why it happens
             No markdown, no extra text, just the raw JSON object.
