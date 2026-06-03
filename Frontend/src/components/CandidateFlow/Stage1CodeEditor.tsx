@@ -12,6 +12,12 @@ const getFileExtension = (lang?: string) => {
     case 'typescript': return 'ts';
     case 'java': return 'java';
     case 'go': return 'go';
+    case 'rust': return 'rs';
+    case 'cpp': return 'cpp';
+    case 'ruby': return 'rb';
+    case 'php': return 'php';
+    case 'react': return 'jsx';
+    case 'c': return 'c';
     default: return 'js';
   }
 }
@@ -185,7 +191,7 @@ export default function Stage1CodeEditor({ session, onTimeUp, onSubmit }: Props)
         <div className="flex-1 flex flex-col bg-slate-950/40 relative overflow-hidden">
           {/* File bar tabs mimicking real IDE */}
           <div className="bg-[#14161d] border-b border-white/5 flex items-center px-4">
-            <div className="bg-[#1e222b] border-t-2 border-indigo-500 px-4 py-2.5 text-xs font-mono font-medium text-slate-200 flex items-center gap-2 border-r border-slate-950/80 shadow-md">
+            <div className="bg-[#1e222b] border-t-2 border-indigo-500 px-4 py-2.5 text-xs font-mono font-medium text-slate-200 flex items-center gap-2 border-r shadow-md">
               <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
               </svg>
@@ -201,7 +207,7 @@ export default function Stage1CodeEditor({ session, onTimeUp, onSubmit }: Props)
             <div className="h-full rounded-2xl overflow-hidden border border-white/5 shadow-inner">
               <Editor
                 height="100%"
-                language={session.language ? session.language.toLowerCase() : "javascript"}
+                language={session.language ? (session.language.toLowerCase() === 'react' ? 'javascript' : session.language.toLowerCase()) : "javascript"}
                 value={code}
                 onChange={value => {
                   const val = value ?? ''

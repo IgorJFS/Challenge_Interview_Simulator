@@ -58,10 +58,10 @@ export default function Stage2Workspace({ sessionId }: Props) {
   ])
   const [input, setInput] = useState('')
   const [currentHintIndex, setCurrentHintIndex] = useState(0)
+  const [showFinishModal, setShowFinishModal] = useState(false)
   
   const poolIndexRef = useRef(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const alertedTimeUp = useRef(false)
 
   // Load or initialize countdown timer using localStorage to survive browser refreshes
   const getInitialTime = () => {
@@ -78,6 +78,21 @@ export default function Stage2Workspace({ sessionId }: Props) {
   }
 
   const [timeLeft, setTimeLeft] = useState(getInitialTime)
+  const alertedTimeUp = useRef(getInitialTime() <= 0)
+
+  const handleFinishChallenge = async () => {
+    setShowFinishModal(false)
+    const stageKey = `stage2_timer_end_${sessionId}`
+    localStorage.setItem(stageKey, Date.now().toString())
+    setTimeLeft(0)
+    
+    // Post finish message to sync with the interviewer
+    try {
+      await postMessage(sessionId, 'Candidate', 'Candidate completed the interview.')
+    } catch (err) {
+      console.error('Failed to post completion message', err)
+    }
+  }
 
   useEffect(() => {
     const stageKey = `stage2_timer_end_${sessionId}`
@@ -382,7 +397,7 @@ export default function Stage2Workspace({ sessionId }: Props) {
               <>
                 <span className="text-[#949ba4] text-xl font-mono font-bold">#</span>
                 <span className="font-bold text-white text-[14.5px] truncate">general</span>
-                <div className="w-[1px] h-4 bg-[#3f4147] mx-2 hidden sm:block" />
+                <div className="w-px h-4 bg-[#3f4147] mx-2 hidden sm:block" />
                 <span className="text-xs text-[#949ba4] font-medium hidden sm:block truncate leading-none">
                   Company general discussion and collaboration channel.
                 </span>
@@ -391,7 +406,7 @@ export default function Stage2Workspace({ sessionId }: Props) {
               <>
                 <span className="text-[#949ba4] text-md font-bold">@</span>
                 <span className="font-bold text-white text-[14.5px] truncate">Julia Ramos (Tech Lead)</span>
-                <div className="w-[1px] h-4 bg-[#3f4147] mx-2 hidden sm:block" />
+                <div className="w-px h-4 bg-[#3f4147] mx-2 hidden sm:block" />
                 <span className="text-xs text-[#949ba4] font-medium hidden sm:block truncate leading-none">
                   Private direct message session with your Tech Lead.
                 </span>
@@ -399,20 +414,31 @@ export default function Stage2Workspace({ sessionId }: Props) {
             )}
           </div>
 
-          {/* Countdown live timer badge */}
-          <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-sm font-mono text-[12.5px] font-extrabold tracking-tight select-none ${
-            timeLeft < 60 
-              ? 'bg-rose-500/15 border-rose-500/30 text-rose-400 animate-pulse'
-              : 'bg-amber-500/10 border-amber-500/25 text-amber-400'
-          }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${timeLeft < 60 ? 'bg-rose-400' : 'bg-amber-400 animate-pulse'}`} />
-            Time Left: {formatTime(timeLeft)}
+          {/* Countdown live timer badge and finish challenge button */}
+          <div className="flex items-center gap-4">
+            <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-sm font-mono text-[12.5px] font-extrabold tracking-tight select-none ${
+              timeLeft < 60 
+                ? 'bg-rose-500/15 border-rose-500/30 text-rose-400 animate-pulse'
+                : 'bg-amber-500/10 border-amber-500/25 text-amber-400'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${timeLeft < 60 ? 'bg-rose-400' : 'bg-amber-400 animate-pulse'}`} />
+              Time Left: {formatTime(timeLeft)}
+            </div>
+
+            {timeLeft > 0 && (
+              <button
+                onClick={() => setShowFinishModal(true)}
+                className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition duration-200 cursor-pointer shadow-md shadow-rose-950/20"
+              >
+                Finish Challenge
+              </button>
+            )}
           </div>
         </div>
 
         {/* 4. HINTS BOARD: SHINY BANNER AT THE TOP */}
         <div className="px-6 pt-4 shrink-0">
-          <div className="bg-gradient-to-r from-amber-500/[0.07] via-amber-600/[0.04] to-indigo-500/[0.07] border border-amber-500/20 rounded-2xl p-4 shadow-md flex items-start justify-between gap-4 relative overflow-hidden group">
+          <div className="bg-linear-to-r from-amber-500/[0.07] via-amber-600/4 to-indigo-500/[0.07] border border-amber-500/20 rounded-2xl p-4 shadow-md flex items-start justify-between gap-4 relative overflow-hidden group">
             
             {/* Ambient gold glow on background */}
             <div className="absolute -right-16 -top-16 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
@@ -509,7 +535,7 @@ export default function Stage2Workspace({ sessionId }: Props) {
                       className="w-10 h-10 rounded-full object-cover shrink-0 shadow-md border border-[#1f2023]/40"
                     />
                   ) : (
-                    <div className={`w-10 h-10 rounded-full bg-gradient-to-tr ${
+                    <div className={`w-10 h-10 rounded-full bg-linear-to-tr ${
                       msg.avatarColor || (isCandidate ? 'from-blue-600 to-indigo-700' : 'from-indigo-500 to-purple-650')
                     } flex items-center justify-center text-white font-extrabold text-sm shrink-0 shadow-md border border-[#1f2023]/40 select-none`}>
                       {msg.sender.substring(0, 1).toUpperCase()}
@@ -526,7 +552,7 @@ export default function Stage2Workspace({ sessionId }: Props) {
                       </span>
                       <span className="text-[10px] text-slate-500 font-medium font-mono select-none">{msg.time}</span>
                     </div>
-                    <p className="text-[#dbdee1] text-[13.5px] leading-relaxed pr-6 break-words whitespace-pre-wrap">
+                    <p className="text-[#dbdee1] text-[13.5px] leading-relaxed pr-6 wrap-break-word whitespace-pre-wrap">
                       {msg.text}
                     </p>
                   </div>
@@ -539,56 +565,68 @@ export default function Stage2Workspace({ sessionId }: Props) {
 
         {/* 6. MESSAGE INPUT BAR - DISCORD STYLE */}
         <div className="px-6 pb-6 pt-2 shrink-0">
-          <div className="flex flex-col gap-1.5">
-            
-            <div className="bg-[#383a40] border border-[#2f3136] rounded-xl flex items-center px-4 py-2.5 shadow-sm group focus-within:ring-2 focus-within:ring-indigo-500/50 transition">
-              {/* Fake upload button */}
-              <button className="text-[#b5bac1] hover:text-[#dbdee1] p-1 rounded-full hover:bg-slate-700 transition shrink-0 mr-3 cursor-not-allowed" title="Attach file">
+          {timeLeft <= 0 ? (
+            <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-5 text-center flex flex-col items-center gap-2 select-none">
+              <span className="p-2 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-              </button>
-
-              <input
-                type="text"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={activeTab === 'general' ? 'Message #general' : 'Message @Julia Ramos'}
-                className="flex-1 bg-transparent text-white text-[14px] outline-none placeholder-[#858591]"
-              />
-
-              {/* Emoji bar placeholders */}
-              <div className="flex items-center gap-1.5 text-[#b5bac1] shrink-0 ml-3 select-none">
-                <button className="p-1 rounded hover:bg-slate-700 hover:text-[#dbdee1] transition cursor-not-allowed" title="Insert GIF">
-                  <span className="font-mono font-extrabold text-[10px] border border-[#b5bac1] px-1 rounded">GIF</span>
-                </button>
-                <button className="p-1 rounded hover:bg-slate-700 hover:text-[#dbdee1] transition cursor-not-allowed" title="Select Sticker">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
-                
-                {/* Send Button */}
-                <button
-                  onClick={handleSend}
-                  className="p-1.5 rounded-lg bg-[#5865f2] hover:bg-[#4752c4] text-white transition ml-1 cursor-pointer"
-                  title="Send Message"
-                >
-                  <svg className="w-4 h-4 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                  </svg>
-                </button>
-              </div>
+              </span>
+              <span className="text-sm font-bold text-rose-400 uppercase tracking-wider">Technical Interview Concluded</span>
+              <p className="text-xs text-slate-400 max-w-md">
+                You have finished the challenge. Your code submissions and workspace communication log have been finalized. You may now close this window.
+              </p>
             </div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <div className="bg-[#383a40] border border-[#2f3136] rounded-xl flex items-center px-4 py-2.5 shadow-sm group focus-within:ring-2 focus-within:ring-indigo-500/50 transition">
+                {/* Fake upload button */}
+                <button className="text-[#b5bac1] hover:text-[#dbdee1] p-1 rounded-full hover:bg-slate-700 transition shrink-0 mr-3 cursor-not-allowed" title="Attach file">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
 
-            {/* Input tip banner */}
-            <span className="text-[10.5px] text-[#949ba4] font-medium leading-none select-none pl-1 flex items-center gap-1">
-              <span className="font-bold text-indigo-400">Pro-Tip:</span>
-              <span>Press <kbd className="bg-[#2b2d31] border border-white/5 px-1.5 py-0.5 rounded text-[9.5px]">Enter</kbd> to broadcast your message to the team workspace.</span>
-            </span>
+                <input
+                  type="text"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={activeTab === 'general' ? 'Message #general' : 'Message @Julia Ramos'}
+                  className="flex-1 bg-transparent text-white text-[14px] outline-none placeholder-[#858591]"
+                />
 
-          </div>
+                {/* Emoji bar placeholders */}
+                <div className="flex items-center gap-1.5 text-[#b5bac1] shrink-0 ml-3 select-none">
+                  <button className="p-1 rounded hover:bg-slate-700 hover:text-[#dbdee1] transition cursor-not-allowed" title="Insert GIF">
+                    <span className="font-mono font-extrabold text-[10px] border border-[#b5bac1] px-1 rounded">GIF</span>
+                  </button>
+                  <button className="p-1 rounded hover:bg-slate-700 hover:text-[#dbdee1] transition cursor-not-allowed" title="Select Sticker">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
+                  
+                  {/* Send Button */}
+                  <button
+                    onClick={handleSend}
+                    className="p-1.5 rounded-lg bg-[#5865f2] hover:bg-[#4752c4] text-white transition ml-1 cursor-pointer"
+                    title="Send Message"
+                  >
+                    <svg className="w-4 h-4 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Input tip banner */}
+              <span className="text-[10.5px] text-[#949ba4] font-medium leading-none select-none pl-1 flex items-center gap-1">
+                <span className="font-bold text-indigo-400">Pro-Tip:</span>
+                <span>Press <kbd className="bg-[#2b2d31] border border-white/5 px-1.5 py-0.5 rounded text-[9.5px]">Enter</kbd> to broadcast your message to the team workspace.</span>
+              </span>
+            </div>
+          )}
         </div>
 
       </div>
@@ -675,6 +713,40 @@ export default function Stage2Workspace({ sessionId }: Props) {
 
       </div>
 
+      {/* Confirmation Modal */}
+      {showFinishModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+          <div className="bg-[#2b2d31] border border-white/8 w-full max-w-md rounded-2xl p-6 shadow-2xl flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 text-rose-400">
+              <span className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </span>
+              <h3 className="text-lg font-bold text-white">Finish Challenge?</h3>
+            </div>
+            
+            <p className="text-sm text-slate-300 leading-relaxed">
+              Are you sure you want to finish the technical interview? You won't be able to send any more messages once finalized.
+            </p>
+            
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={handleFinishChallenge}
+                className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl transition duration-200 cursor-pointer text-sm"
+              >
+                Yes, I'd like to finish the challenge
+              </button>
+              <button
+                onClick={() => setShowFinishModal(false)}
+                className="flex-1 bg-[#383a40] hover:bg-slate-700 text-[#dbdee1] border border-white/5 font-bold py-2.5 rounded-xl transition duration-200 cursor-pointer text-sm"
+              >
+                No, don't finish the challenge
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

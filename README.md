@@ -6,7 +6,7 @@ A technical interview tool that goes beyond LeetCode. Instead of abstract puzzle
 
 ## Demo
 
-<!-- Add a GIF of the project running here -->
+![Interview Challenge Simulator Demo](interview_challenge_preview.mp4)
 
 ---
 
@@ -29,58 +29,99 @@ When the session ends, all data is permanently deleted.
 
 ---
 
-## Running locally
+## Getting Started
+
+You can run this project either using Docker (recommended for quick setup) or locally by running the backend and frontend services separately.
+
+---
+
+## Running with Docker (Recommended)
+
+Docker Compose automatically spins up the database (SQL Server), the backend API, and the frontend web app with a single command.
 
 ### Prerequisites
 
-- .NET 10 SDK
-- Node.js 18+
-- SQL Server (local instance)
-- Google Gemini API key (free at [aistudio.google.com](https://aistudio.google.com))
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
-### Backend
+### Setup & Run
 
-```bash
-cd Backend/sim_backend
-```
+1. **Configure Environment Variables:**
+   Copy the `.env.example` file in the root directory to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   Open the `.env` file and fill in your details:
+   - `AUTH_PASSWORD`: The password you will use to log in to the interviewer dashboard.
+   - `GEMINI_API_KEY`: Your Google Gemini API key (get one for free at [aistudio.google.com](https://aistudio.google.com)).
 
-Create `appsettings.Development.json` with the following content:
+2. **Spin up the Containers:**
+   In the root directory, run:
+   ```bash
+   docker compose up --build
+   ```
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=InterviewChallengeDB;Trusted_Connection=True;TrustServerCertificate=True;"
-  },
-  "Auth": {
-    "Password": "your_password_here"
-  },
-  "Gemini": {
-    "ApiKey": "your_gemini_api_key_here"
-  }
-}
-```
+3. **Access the Application:**
+   - **Interviewer / Candidate Web Client:** [http://localhost:5173](http://localhost:5173)
+   - **Backend API Docs / Base:** [http://localhost:5138/api](http://localhost:5138/api)
 
-Then run:
+---
 
-```bash
-dotnet ef database update
-dotnet run
-```
+## Running locally
 
-### Frontend
+If you prefer to run the services individually on your machine:
 
-```bash
-cd Frontend
-npm install
-npm run dev
-```
+### Prerequisites
 
-Access the interviewer panel at `http://localhost:5173` and log in with the password you set above.
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Node.js](https://nodejs.org/) (v18+)
+- SQL Server (local instance running)
+- Google Gemini API key
+
+### 1. Backend Setup
+
+1. Navigate to the backend directory:
+   ```bash
+   cd Backend/sim_backend
+   ```
+2. Create an `appsettings.Development.json` file in `Backend/sim_backend/` with the following configuration:
+   ```json
+   {
+     "ConnectionStrings": {
+       "DefaultConnection": "Server=localhost;Database=InterviewChallengeDB;Trusted_Connection=True;TrustServerCertificate=True;"
+     },
+     "Auth": {
+       "Password": "your_password_here"
+     },
+     "Gemini": {
+       "ApiKey": "your_gemini_api_key_here"
+     }
+   }
+   ```
+3. Apply Entity Framework migrations and start the backend:
+   ```bash
+   dotnet ef database update
+   dotnet run
+   ```
+
+### 2. Frontend Setup
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd Frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Access the interviewer panel at [http://localhost:5173](http://localhost:5173) and log in using the password configured in `appsettings.Development.json`.
 
 ---
 
 ## Notes
 
-- `appsettings.Development.json` is gitignored and must be created manually
-- The Gemini free tier allows 15 requests per minute — sufficient for normal use
-- All session data is deleted when the interviewer clicks "End Session"
+- `appsettings.Development.json` and `.env` are gitignored to prevent sensitive credentials leaking.
+- All session data is permanently deleted from the database when the interviewer clicks "End Session" in their dashboard.

@@ -2,24 +2,31 @@ import { useState, useEffect } from 'react'
 import { createSession, deleteSession, getSubmission, getMessages } from '../services/api'
 
 const JOB_ROLES = [
-  { id: 'Backend Junior', name: 'Backend Junior', category: 'Backend', icon: 'server' },
-  { id: 'Backend Senior', name: 'Backend Senior', category: 'Backend', icon: 'server' },
-  { id: 'Frontend Junior', name: 'Frontend Junior', category: 'Frontend', icon: 'layout' },
-  { id: 'Frontend Senior', name: 'Frontend Senior', category: 'Frontend', icon: 'layout' },
-  { id: 'Fullstack Junior', name: 'Fullstack Junior', category: 'Fullstack', icon: 'layers' },
-  { id: 'Fullstack Senior', name: 'Fullstack Senior', category: 'Fullstack', icon: 'layers' },
-  { id: 'Game Dev Junior', name: 'Game Dev Junior', category: 'Game Dev', icon: 'gamepad' },
-  { id: 'Game Dev Senior', name: 'Game Dev Senior', category: 'Game Dev', icon: 'gamepad' },
+  { id: 'Backend Junior', name: 'Backend Junior', category: 'Backend', icon: 'server', color: '#ef4444' },
+  { id: 'Backend Senior', name: 'Backend Senior', category: 'Backend', icon: 'server', color: '#ef4444' },
+  { id: 'Frontend Junior', name: 'Frontend Junior', category: 'Frontend', icon: 'layout', color: '#06b6d4' },
+  { id: 'Frontend Senior', name: 'Frontend Senior', category: 'Frontend', icon: 'layout', color: '#06b6d4' },
+  { id: 'Fullstack Junior', name: 'Fullstack Junior', category: 'Fullstack', icon: 'layers', color: '#8b5cf6' },
+  { id: 'Fullstack Senior', name: 'Fullstack Senior', category: 'Fullstack', icon: 'layers', color: '#8b5cf6' },
+  { id: 'Game Dev Junior', name: 'Game Dev Junior', category: 'Game Dev', icon: 'gamepad', color: '#10b981' },
+  { id: 'Game Dev Senior', name: 'Game Dev Senior', category: 'Game Dev', icon: 'gamepad', color: '#10b981' },
 ]
 
 const LANGUAGES = [
-  { id: 'JavaScript', name: 'JavaScript', extension: 'js' },
-  { id: 'TypeScript', name: 'TypeScript', extension: 'ts' },
-  { id: 'Python', name: 'Python', extension: 'py' },
-  { id: 'CSharp', name: 'C#', extension: 'cs' },
-  { id: 'Java', name: 'Java', extension: 'java' },
-  { id: 'Go', name: 'Go', extension: 'go' },
+  { id: 'JavaScript', name: 'JavaScript', extension: 'js', color: '#eab308' },
+  { id: 'TypeScript', name: 'TypeScript', extension: 'ts', color: '#3b82f6' },
+  { id: 'React', name: 'React', extension: 'jsx', color: '#61dafb' },
+  { id: 'CSharp', name: 'C#', extension: 'cs', color: '#a855f7' },
+  { id: 'Java', name: 'Java', extension: 'java', color: '#f97316' },
+  { id: 'Go', name: 'Go', extension: 'go', color: '#06b6d4' },
+  { id: 'Rust', name: 'Rust', extension: 'rs', color: '#ea580c' },
+  { id: 'C', name: 'C', extension: 'c', color: '#a8b9cc' },
+  { id: 'Cpp', name: 'C++', extension: 'cpp', color: '#f43f5e' },
+  { id: 'Ruby', name: 'Ruby', extension: 'rb', color: '#ef4444' },
+  { id: 'Php', name: 'PHP', extension: 'php', color: '#6366f1' },
+  { id: 'Python', name: 'Python', extension: 'py', color: '#38bdf8' },
 ]
+
 
 interface Submission {
   candidateCode: string
@@ -61,6 +68,10 @@ export default function InterviewerDashboard() {
       try {
         const msgRes = await getMessages(sessionId)
         setMessages(msgRes.data.filter((m: ChatMessage) => m.isFromCandidate))
+        if (msgRes.data.some((m: ChatMessage) => m.messageContent.includes('Candidate completed the interview.'))) {
+          setTimerStage(2)
+          setTimeLeft(0)
+        }
       } catch {}
     }, 3000)
 
@@ -150,6 +161,12 @@ export default function InterviewerDashboard() {
       case 'typescript': return 'ts';
       case 'java': return 'java';
       case 'go': return 'go';
+      case 'rust': return 'rs';
+      case 'cpp': return 'cpp';
+      case 'ruby': return 'rb';
+      case 'php': return 'php';
+      case 'react': return 'jsx';
+      case 'c': return 'c';
       default: return 'js';
     }
   }
@@ -181,8 +198,12 @@ export default function InterviewerDashboard() {
         )
       case 'gamepad':
         return (
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 100 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 100-4V7a2 2 0 00-2-2H5z" />
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="6" width="20" height="12" rx="3" />
+            <path d="M6 12h4" />
+            <path d="M8 10v4" />
+            <line x1="15" y1="13" x2="15.01" y2="13" strokeWidth={3} />
+            <line x1="18" y1="11" x2="18.01" y2="11" strokeWidth={3} />
           </svg>
         )
       default:
@@ -267,27 +288,41 @@ export default function InterviewerDashboard() {
                     <button
                       key={role.id}
                       onClick={() => setSelectedRole(role.id)}
+                      style={{
+                        borderColor: isSelected ? role.color : undefined,
+                        boxShadow: isSelected ? `0 4px 20px -2px ${role.color}25` : undefined,
+                        background: isSelected ? `linear-gradient(to right, ${role.color}15, transparent)` : undefined,
+                      }}
                       className={`flex items-center gap-3.5 px-5 py-4 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden group ${
                         isSelected
-                          ? 'bg-linear-to-r from-indigo-950/50 to-purple-950/50 border-indigo-500/80 text-white shadow-lg shadow-indigo-950/40'
-                          : 'bg-slate-800/20 border-white/4 text-slate-400 hover:bg-slate-800/40 hover:border-white/8 hover:text-slate-200'
+                          ? 'text-white'
+                          : 'bg-slate-800/20 border-white/4 text-slate-400 hover:bg-slate-800/45 hover:text-slate-200'
                       }`}
                     >
-                      {/* Accent glow on selected */}
-                      {isSelected && (
-                        <div className="absolute inset-0 bg-indigo-500/2 pointer-events-none" />
+                      {!isSelected && (
+                        <div 
+                          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-[0.03] transition-opacity duration-300"
+                          style={{
+                            background: `linear-gradient(to right, ${role.color}, transparent)`
+                          }}
+                        />
                       )}
                       
-                      <div className={`p-2.5 rounded-xl transition-all duration-300 ${
-                        isSelected 
-                          ? 'bg-indigo-500/20 text-indigo-300' 
-                          : 'bg-slate-800/60 text-slate-400 group-hover:text-slate-300'
-                      }`}>
+                      <div 
+                        className="p-2.5 rounded-xl transition-all duration-300 relative z-10"
+                        style={{
+                          backgroundColor: isSelected ? `${role.color}25` : 'rgba(30, 41, 59, 0.6)',
+                          color: isSelected ? role.color : '#94a3b8',
+                        }}
+                      >
                         {renderRoleIcon(role.icon)}
                       </div>
 
-                      <div className="flex flex-col">
-                        <span className="text-xs text-indigo-400/70 font-semibold tracking-wide uppercase">
+                      <div className="flex flex-col relative z-10">
+                        <span 
+                          className="text-[10px] font-bold tracking-wider uppercase"
+                          style={{ color: role.color }}
+                        >
                           {role.category}
                         </span>
                         <span className="font-bold text-sm tracking-tight transition-colors">
@@ -312,17 +347,42 @@ export default function InterviewerDashboard() {
                     <button
                       key={lang.id}
                       onClick={() => setSelectedLanguage(lang.id)}
+                      style={{
+                        borderColor: isSelected ? lang.color : undefined,
+                        boxShadow: isSelected ? `0 4px 20px -2px ${lang.color}25` : undefined,
+                      }}
                       className={`flex items-center justify-between px-4 py-3.5 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden group ${
                         isSelected
-                          ? 'bg-linear-to-r from-indigo-950/50 to-purple-950/50 border-indigo-500/80 text-white shadow-lg shadow-indigo-950/40'
-                          : 'bg-slate-800/20 border-white/4 text-slate-400 hover:bg-slate-800/40 hover:border-white/8 hover:text-slate-200'
+                          ? 'text-white bg-slate-900/60'
+                          : 'bg-slate-800/20 border-white/4 text-slate-400 hover:bg-slate-800/45 hover:text-slate-200'
                       }`}
                     >
-                      {isSelected && (
-                        <div className="absolute inset-0 bg-indigo-500/2 pointer-events-none" />
+                      {isSelected ? (
+                        <div 
+                          className="absolute inset-0 pointer-events-none opacity-[0.08]"
+                          style={{
+                            backgroundColor: lang.color
+                          }}
+                        />
+                      ) : (
+                        <div 
+                          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-[0.03] transition-opacity duration-300"
+                          style={{
+                            backgroundColor: lang.color
+                          }}
+                        />
                       )}
-                      <span className="font-bold text-sm tracking-tight">{lang.name}</span>
-                      <span className="text-[10px] text-indigo-400/80 font-bold font-mono bg-slate-850 px-2 py-0.5 rounded border border-white/10 uppercase">
+                      <span className="font-bold text-sm tracking-tight relative z-10 transition-colors duration-300" style={{ color: isSelected ? '#ffffff' : '#cbd5e1' }}>
+                        {lang.name}
+                      </span>
+                      <span 
+                        className="text-[10px] font-bold font-mono px-2 py-0.5 rounded border uppercase transition-colors duration-300 relative z-10"
+                        style={{
+                          color: lang.color,
+                          borderColor: `${lang.color}35`,
+                          backgroundColor: `${lang.color}12`
+                        }}
+                      >
                         .{lang.extension}
                       </span>
                     </button>
