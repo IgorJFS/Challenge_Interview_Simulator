@@ -4,9 +4,19 @@ A technical interview tool that goes beyond LeetCode. Instead of abstract puzzle
 
 ---
 
-## Demo
+## Screenshots
 
-![Interview Challenge Simulator Demo](interview_challenge_preview.mp4)
+### Interviewer Dashboard
+
+|       Session Selection & Status        |        Live Candidate Progress Monitoring        |
+| :-------------------------------------: | :----------------------------------------------: |
+| ![Interviewer Dashboard](dashboard.png) | ![Interviewer Dashboard Details](dashboard2.png) |
+
+### Candidate Experience
+
+|         Stage 1: Coding Challenge         |        Stage 2: Team Collaboration        |
+| :---------------------------------------: | :---------------------------------------: |
+| ![Candidate Stage 1](candidateStage1.png) | ![Candidate Stage 2](candidateStage2.png) |
 
 ---
 
@@ -47,15 +57,18 @@ Docker Compose automatically spins up the database (SQL Server), the backend API
 
 1. **Configure Environment Variables:**
    Copy the `.env.example` file in the root directory to `.env`:
+
    ```bash
    cp .env.example .env
    ```
+
    Open the `.env` file and fill in your details:
    - `AUTH_PASSWORD`: The password you will use to log in to the interviewer dashboard.
    - `GEMINI_API_KEY`: Your Google Gemini API key (get one for free at [aistudio.google.com](https://aistudio.google.com)).
 
 2. **Spin up the Containers:**
    In the root directory, run:
+
    ```bash
    docker compose up --build
    ```
