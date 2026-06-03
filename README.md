@@ -8,15 +8,15 @@ A technical interview tool that goes beyond LeetCode. Instead of abstract puzzle
 
 ### Interviewer Dashboard
 
-|       Session Selection & Status        |        Live Candidate Progress Monitoring        |
-| :-------------------------------------: | :----------------------------------------------: |
-| ![Interviewer Dashboard](dashboard.png) | ![Interviewer Dashboard Details](dashboard2.png) |
+|           Session Selection & Status           |           Live Candidate Progress Monitoring            |
+| :--------------------------------------------: | :-----------------------------------------------------: |
+| ![Interviewer Dashboard](/media/dashboard.png) | ![Interviewer Dashboard Details](/media/dashboard2.png) |
 
 ### Candidate Experience
 
-|         Stage 1: Coding Challenge         |        Stage 2: Team Collaboration        |
-| :---------------------------------------: | :---------------------------------------: |
-| ![Candidate Stage 1](candidateStage1.png) | ![Candidate Stage 2](candidateStage2.png) |
+|            Stage 1: Coding Challenge             |           Stage 2: Team Collaboration            |
+| :----------------------------------------------: | :----------------------------------------------: |
+| ![Candidate Stage 1](/media/candidateStage1.png) | ![Candidate Stage 2](/media/candidateStage2.png) |
 
 ---
 
