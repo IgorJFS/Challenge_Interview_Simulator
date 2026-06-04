@@ -10,4 +10,5 @@ public class SessionResponse
     public string BugExplanation { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime? Stage1StartedAt { get; set; }
 }

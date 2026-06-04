@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createSession, deleteSession, getSubmission, getMessages } from '../services/api'
+import { createSession, deleteSession, getSubmission, getMessages, getSession } from '../services/api'
 
 const JOB_ROLES = [
   { id: 'Backend Junior', name: 'Backend Junior', category: 'Backend', icon: 'server', color: '#ef4444' },
@@ -55,6 +55,7 @@ export default function InterviewerDashboard() {
   const [bugExplanation, setBugExplanation] = useState('')
   const [selectedLanguage, setSelectedLanguage] = useState(LANGUAGES[0].id)
   const [sessionLanguage, setSessionLanguage] = useState('JavaScript')
+  const [stage1StartedAt, setStage1StartedAt] = useState<string | null>(null)
 
   useEffect(() => {
     if (!sessionId) return
@@ -63,6 +64,13 @@ export default function InterviewerDashboard() {
       try {
         const subRes = await getSubmission(sessionId)
         setSubmission(subRes.data)
+      } catch {}
+
+      try {
+        const sessionRes = await getSession(sessionId)
+        if (sessionRes.data.stage1StartedAt) {
+          setStage1StartedAt(sessionRes.data.stage1StartedAt)
+        }
       } catch {}
 
       try {
@@ -83,28 +91,44 @@ export default function InterviewerDashboard() {
     if (!sessionId) {
       setTimeLeft(10 * 60)
       setTimerStage(1)
+      setStage1StartedAt(null)
       return
     }
 
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          setTimerStage(curr => {
-            if (curr === 1) {
-              setTimeLeft(10 * 60)
-              return 2
-            }
-            clearInterval(timer)
-            return 2
-          })
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
+    if (timerStage === 1) {
+      if (!stage1StartedAt) {
+        setTimeLeft(10 * 60)
+        return
+      }
 
-    return () => clearInterval(timer)
-  }, [sessionId])
+      const timer = setInterval(() => {
+        const startTime = new Date(stage1StartedAt.endsWith('Z') ? stage1StartedAt : stage1StartedAt + 'Z').getTime()
+        const endTime = startTime + 10 * 60 * 1000
+        const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000))
+        setTimeLeft(remaining)
+
+        if (remaining <= 0) {
+          setTimerStage(2)
+          setTimeLeft(10 * 60)
+          clearInterval(timer)
+        }
+      }, 1000)
+
+      return () => clearInterval(timer)
+    } else {
+      const timer = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timer)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      return () => clearInterval(timer)
+    }
+  }, [sessionId, stage1StartedAt, timerStage])
 
   // Transition stage 2 when candidate submits Stage 1 successfully
   useEffect(() => {
@@ -139,6 +163,7 @@ export default function InterviewerDashboard() {
     setFixedCode('')
     setBugExplanation('')
     setSessionLanguage('JavaScript')
+    setStage1StartedAt(null)
   }
 
   const handleCopyLink = () => {
@@ -468,8 +493,20 @@ export default function InterviewerDashboard() {
                 </div>
  
                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/60 border border-white/4 text-xs font-medium text-slate-300 mb-1">
-                  <span className={`w-2 h-2 rounded-full ${timeLeft === 0 && timerStage === 2 ? 'bg-slate-500' : 'bg-emerald-500 animate-pulse'}`} />
-                  {timeLeft === 0 && timerStage === 2 ? 'Test Concluded' : timerStage === 2 ? 'Stage 2: Live Chat' : 'Stage 1: Code Challenge'}
+                  <span className={`w-2 h-2 rounded-full ${
+                    timeLeft === 0 && timerStage === 2 
+                      ? 'bg-slate-500' 
+                      : !stage1StartedAt && timerStage === 1
+                        ? 'bg-amber-500 animate-pulse'
+                        : 'bg-emerald-500 animate-pulse'
+                  }`} />
+                  {timeLeft === 0 && timerStage === 2 
+                    ? 'Test Concluded' 
+                    : timerStage === 2 
+                      ? 'Stage 2: Live Chat' 
+                      : !stage1StartedAt 
+                        ? 'Awaiting Candidate' 
+                        : 'Stage 1: Code Challenge'}
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-white/4 w-full text-center">

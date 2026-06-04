@@ -28,14 +28,17 @@ public class SessionController : ControllerBase
             FixedCode = session.FixedCode,
             BugExplanation = session.BugExplanation,
             IsActive = session.IsActive,
-            CreatedAt = session.CreatedAt
+            CreatedAt = DateTime.SpecifyKind(session.CreatedAt, DateTimeKind.Utc),
+            Stage1StartedAt = session.Stage1StartedAt.HasValue
+                ? DateTime.SpecifyKind(session.Stage1StartedAt.Value, DateTimeKind.Utc)
+                : null
         });
     }
 
     [HttpGet("{sessionId}")]
-    public async Task<IActionResult> GetSession(Guid sessionId)
+    public async Task<IActionResult> GetSession(Guid sessionId, [FromQuery] bool start = false)
     {
-        var session = await _sessionService.GetSessionAsync(sessionId);
+        var session = await _sessionService.GetSessionAsync(sessionId, start);
         if (session is null) return NotFound();
 
         return Ok(new SessionResponse
@@ -47,7 +50,10 @@ public class SessionController : ControllerBase
             FixedCode = session.FixedCode,
             BugExplanation = session.BugExplanation,
             IsActive = session.IsActive,
-            CreatedAt = session.CreatedAt
+            CreatedAt = DateTime.SpecifyKind(session.CreatedAt, DateTimeKind.Utc),
+            Stage1StartedAt = session.Stage1StartedAt.HasValue
+                ? DateTime.SpecifyKind(session.Stage1StartedAt.Value, DateTimeKind.Utc)
+                : null
         });
     }
 

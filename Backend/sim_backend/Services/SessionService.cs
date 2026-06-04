@@ -40,12 +40,20 @@ public class SessionService
         return session;
     }
 
-    public async Task<Session?> GetSessionAsync(Guid sessionId)
+    public async Task<Session?> GetSessionAsync(Guid sessionId, bool start = false)
     {
-        return await _db.Sessions
+        var session = await _db.Sessions
             .Include(s => s.Submissions)
             .Include(s => s.ChatMessages)
             .FirstOrDefaultAsync(s => s.SessionId == sessionId);
+
+        if (session is not null && start && session.Stage1StartedAt is null)
+        {
+            session.Stage1StartedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+        }
+
+        return session;
     }
 
     public async Task DeleteSessionAsync(Guid sessionId)

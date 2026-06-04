@@ -11,6 +11,7 @@ interface Session {
   isActive: boolean
   createdAt: string
   language?: string
+  stage1StartedAt?: string
 }
 
 export default function CandidateSession() {
@@ -29,7 +30,7 @@ export default function CandidateSession() {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const response = await getSession(sessionId!)
+        const response = await getSession(sessionId!, true)
         setSession(response.data)
       } catch {
         alert('Session not found.')

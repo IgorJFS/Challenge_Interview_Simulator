@@ -12,8 +12,8 @@ export const login = (password: string) =>
 export const createSession = (jobRole: string, language: string) =>
   api.post('/session', { jobRole, language })
 
-export const getSession = (sessionId: string) =>
-  api.get(`/session/${sessionId}`)
+export const getSession = (sessionId: string, start?: boolean) =>
+  api.get(`/session/${sessionId}${start ? '?start=true' : ''}`)
 
 export const deleteSession = (sessionId: string) =>
   api.delete(`/session/${sessionId}`)

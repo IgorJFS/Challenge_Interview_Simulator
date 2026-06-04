@@ -27,6 +27,7 @@ interface Session {
   jobRole: string
   buggyCode: string
   language?: string
+  stage1StartedAt?: string
 }
 
 interface Props {
@@ -44,8 +45,12 @@ export default function Stage1CodeEditor({ session, onTimeUp, onSubmit }: Props)
   })
   const submitted = useRef(false)
 
-  // Load or initialize countdown timer using localStorage to survive browser refreshes
   const getInitialTime = () => {
+    if (session.stage1StartedAt) {
+      const startTime = new Date(session.stage1StartedAt.endsWith('Z') ? session.stage1StartedAt : session.stage1StartedAt + 'Z').getTime()
+      const endTime = startTime + TIMER_SECONDS * 1000
+      return Math.max(0, Math.floor((endTime - Date.now()) / 1000))
+    }
     const stageKey = `stage1_timer_end_${session.sessionId}`
     const savedEndTime = localStorage.getItem(stageKey)
     if (savedEndTime) {
@@ -64,9 +69,10 @@ export default function Stage1CodeEditor({ session, onTimeUp, onSubmit }: Props)
     const stageKey = `stage1_timer_end_${session.sessionId}`
     
     const interval = setInterval(() => {
-      const savedEndTime = localStorage.getItem(stageKey)
-      if (savedEndTime) {
-        const remaining = Math.max(0, Math.floor((parseInt(savedEndTime, 10) - Date.now()) / 1000))
+      if (session.stage1StartedAt) {
+        const startTime = new Date(session.stage1StartedAt.endsWith('Z') ? session.stage1StartedAt : session.stage1StartedAt + 'Z').getTime()
+        const endTime = startTime + TIMER_SECONDS * 1000
+        const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000))
         setTimeLeft(remaining)
         
         if (remaining <= 0) {
@@ -74,20 +80,31 @@ export default function Stage1CodeEditor({ session, onTimeUp, onSubmit }: Props)
           if (!submitted.current) onTimeUp()
         }
       } else {
-        // Fallback if localStorage was cleared
-        setTimeLeft(prev => {
-          if (prev <= 1) {
+        const savedEndTime = localStorage.getItem(stageKey)
+        if (savedEndTime) {
+          const remaining = Math.max(0, Math.floor((parseInt(savedEndTime, 10) - Date.now()) / 1000))
+          setTimeLeft(remaining)
+          
+          if (remaining <= 0) {
             clearInterval(interval)
             if (!submitted.current) onTimeUp()
-            return 0
           }
-          return prev - 1
-        })
+        } else {
+          // Fallback if localStorage was cleared
+          setTimeLeft(prev => {
+            if (prev <= 1) {
+              clearInterval(interval)
+              if (!submitted.current) onTimeUp()
+              return 0
+            }
+            return prev - 1
+          })
+        }
       }
     }, 1000)
     
     return () => clearInterval(interval)
-  }, [session.sessionId, onTimeUp])
+  }, [session.sessionId, session.stage1StartedAt, onTimeUp])
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0')
