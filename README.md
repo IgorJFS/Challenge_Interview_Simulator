@@ -4,6 +4,10 @@ A technical interview tool that goes beyond LeetCode. Instead of abstract puzzle
 
 ---
 
+## Preview
+
+![Interview Challenge Simulator Preview](/media/interview_challenge_preview.gif)
+
 ## Screenshots
 
 ### Interviewer Dashboard
