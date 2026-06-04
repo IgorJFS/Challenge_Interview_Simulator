@@ -26,9 +26,9 @@ A technical interview tool that goes beyond LeetCode. Instead of abstract puzzle
 
 ## How it works
 
-The interviewer creates a session by selecting a job role. The backend calls the Gemini API to generate a small JavaScript snippet with an intentional bug appropriate for that role. The candidate receives a link and has 15 minutes to find the bug, fix it, and explain what went wrong.
+The interviewer creates a session by selecting a job role. The backend calls the Gemini API to generate a small code snippet(with chosen language by interviewer) with an intentional bug appropriate for that role. The candidate receives a link and has 10 minutes to find the bug, fix it, and explain what went wrong.
 
-If time runs out, a second stage unlocks: a cosmetic Slack-like workspace where the candidate can message the team, ask for help, and demonstrate that they know how to communicate a problem even when they can't solve it alone. The interviewer monitors everything in real time from their dashboard.
+If time runs out, or the candidate completes stage 1, a second stage unlocks: a cosmetic Slack-like workspace where the candidate can message the team, ask for help, and demonstrate that they know how to communicate a problem even when they can't solve it alone. The interviewer monitors everything in real time from their dashboard.
 
 When the session ends, all data is permanently deleted.
 
