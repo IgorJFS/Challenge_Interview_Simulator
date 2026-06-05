@@ -56,6 +56,8 @@ export default function InterviewerDashboard() {
   const [selectedLanguage, setSelectedLanguage] = useState(LANGUAGES[0].id)
   const [sessionLanguage, setSessionLanguage] = useState('JavaScript')
   const [stage1StartedAt, setStage1StartedAt] = useState<string | null>(null)
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini-api-key') || '')
+  const [showApiKey, setShowApiKey] = useState(false)
 
   useEffect(() => {
     if (!sessionId) return
@@ -141,13 +143,14 @@ export default function InterviewerDashboard() {
   const handleCreateSession = async () => {
     setLoading(true)
     try {
-      const response = await createSession(selectedRole, selectedLanguage)
+      const response = await createSession(selectedRole, selectedLanguage, apiKey)
       setSessionId(response.data.sessionId)
       setFixedCode(response.data.fixedCode || '')
       setBugExplanation(response.data.bugExplanation || '')
       setSessionLanguage(response.data.language || 'JavaScript')
-    } catch {
-      alert('Error creating session.')
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || 'Error creating session.'
+      alert(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -299,6 +302,64 @@ export default function InterviewerDashboard() {
               <p className="text-sm text-slate-400 max-w-md mx-auto">
                 Select a target job role. Our AI will craft an appropriate codebase with a sneaky bug tailored for this role.
               </p>
+            </div>
+
+            {/* Gemini API Key Override Block */}
+            <div className="bg-indigo-950/15 border border-indigo-500/15 rounded-2xl p-5 flex flex-col gap-3.5 relative overflow-hidden transition-all duration-300 hover:border-indigo-500/25">
+              {/* Subtle visual accent line */}
+              <div className="absolute top-0 left-0 w-1 h-full bg-linear-to-b from-indigo-500 to-purple-600" />
+              
+              <div className="flex items-center gap-2 pl-1.5">
+                <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m-5 8a3 3 0 11-6 0 3 3 0 016 0zm6.5 2.5a2 2 0 11-4 0 2 2 0 014 0zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </span>
+                <span className="text-xs font-bold text-indigo-300 tracking-wider uppercase">
+                  Gemini API Key (AI Option)
+                </span>
+              </div>
+              
+              <div className="flex flex-col gap-2 pl-1.5">
+                <div className="relative w-full">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </span>
+                  <input
+                    type={showApiKey ? 'text' : 'password'}
+                    placeholder="Enter Gemini API key (optional override)"
+                    value={apiKey}
+                    onChange={e => {
+                      setApiKey(e.target.value)
+                      localStorage.setItem('gemini-api-key', e.target.value)
+                    }}
+                    disabled={loading}
+                    className="w-full bg-slate-900/60 border border-white/6 text-white rounded-xl pl-10 pr-10 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-500 text-sm font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none transition-colors cursor-pointer"
+                    title={showApiKey ? 'Hide API Key' : 'Show API Key'}
+                  >
+                    {showApiKey ? (
+                      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L5.636 5.636m4.242 4.242L18.364 18.364" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-400/80 leading-normal">
+                  If provided, this API key has priority. If left blank, the application falls back to the local server configuration key.
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-col gap-3">

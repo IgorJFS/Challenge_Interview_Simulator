@@ -18,9 +18,9 @@ public class SessionService
         _geminiService = geminiService;
     }
 
-    public async Task<Session> CreateSessionAsync(string jobRole, string language)
+    public async Task<Session> CreateSessionAsync(string jobRole, string language, string? apiKey = null)
     {
-        var (buggyCode, fixedCode, bugExplanation) = await _geminiService.GenerateBugChallengeAsync(jobRole, language);
+        var (buggyCode, fixedCode, bugExplanation) = await _geminiService.GenerateBugChallengeAsync(jobRole, language, apiKey);
 
         var session = new Session
         {

@@ -9,8 +9,8 @@ export const login = (password: string) =>
     headers: { 'Content-Type': 'application/json' }
   })
 
-export const createSession = (jobRole: string, language: string) =>
-  api.post('/session', { jobRole, language })
+export const createSession = (jobRole: string, language: string, apiKey?: string) =>
+  api.post('/session', { jobRole, language, apiKey })
 
 export const getSession = (sessionId: string, start?: boolean) =>
   api.get(`/session/${sessionId}${start ? '?start=true' : ''}`)

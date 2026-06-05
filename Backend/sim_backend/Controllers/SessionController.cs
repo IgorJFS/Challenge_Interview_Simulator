@@ -18,21 +18,28 @@ public class SessionController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateSession([FromBody] CreateSessionRequest request)
     {
-        var session = await _sessionService.CreateSessionAsync(request.JobRole, request.Language);
-        return Ok(new SessionResponse
+        try
         {
-            SessionId = session.SessionId,
-            JobRole = session.JobRole,
-            Language = session.Language,
-            BuggyCode = session.BuggyCode,
-            FixedCode = session.FixedCode,
-            BugExplanation = session.BugExplanation,
-            IsActive = session.IsActive,
-            CreatedAt = DateTime.SpecifyKind(session.CreatedAt, DateTimeKind.Utc),
-            Stage1StartedAt = session.Stage1StartedAt.HasValue
-                ? DateTime.SpecifyKind(session.Stage1StartedAt.Value, DateTimeKind.Utc)
-                : null
-        });
+            var session = await _sessionService.CreateSessionAsync(request.JobRole, request.Language, request.ApiKey);
+            return Ok(new SessionResponse
+            {
+                SessionId = session.SessionId,
+                JobRole = session.JobRole,
+                Language = session.Language,
+                BuggyCode = session.BuggyCode,
+                FixedCode = session.FixedCode,
+                BugExplanation = session.BugExplanation,
+                IsActive = session.IsActive,
+                CreatedAt = DateTime.SpecifyKind(session.CreatedAt, DateTimeKind.Utc),
+                Stage1StartedAt = session.Stage1StartedAt.HasValue
+                    ? DateTime.SpecifyKind(session.Stage1StartedAt.Value, DateTimeKind.Utc)
+                    : null
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpGet("{sessionId}")]

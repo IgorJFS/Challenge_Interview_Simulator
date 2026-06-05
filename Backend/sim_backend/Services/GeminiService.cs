@@ -6,16 +6,22 @@ namespace sim_backend.Services;
 public class GeminiService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _apiKey;
+    private readonly string? _apiKey;
 
     public GeminiService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
-        _apiKey = configuration["Gemini:ApiKey"] ?? throw new Exception("Gemini API key not found");
+        _apiKey = configuration["Gemini:ApiKey"];
     }
 
-    public async Task<(string BuggyCode, string FixedCode, string BugExplanation)> GenerateBugChallengeAsync(string jobRole, string language)
+    public async Task<(string BuggyCode, string FixedCode, string BugExplanation)> GenerateBugChallengeAsync(string jobRole, string language, string? customApiKey = null)
     {
+        var keyToUse = !string.IsNullOrWhiteSpace(customApiKey) ? customApiKey : _apiKey;
+        if (string.IsNullOrWhiteSpace(keyToUse))
+        {
+            throw new Exception("Gemini API key is required. Please provide it in the dashboard or configure it on the server.");
+        }
+
         var prompt = $"""
             Generate a small {language} code snippet with an intentional bug appropriate for a '{jobRole}' position.
             
@@ -46,10 +52,40 @@ public class GeminiService
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         var response = await _httpClient.PostAsync(
-            $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={_apiKey}",
+            $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={keyToUse}",
             content);
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            try
+            {
+                using var doc = JsonDocument.Parse(errorContent);
+                if (doc.RootElement.TryGetProperty("error", out var errorEl) &&
+                    errorEl.TryGetProperty("message", out var msgEl))
+                {
+                    var geminiMessage = msgEl.GetString();
+                    if (!string.IsNullOrWhiteSpace(geminiMessage))
+                    {
+                        if (geminiMessage.Contains("API key not valid") || errorContent.Contains("API_KEY_INVALID"))
+                        {
+                            throw new Exception("Invalid Gemini API key. Please check the key and try again.");
+                        }
+                        throw new Exception($"Gemini API error: {geminiMessage}");
+                    }
+                }
+            }
+            catch (Exception ex) when (ex.Message == "Invalid Gemini API key. Please check the key and try again." || ex.Message.StartsWith("Gemini API error:"))
+            {
+                throw;
+            }
+            catch
+            {
+                // Fallback to default behavior if parsing fails
+            }
+
+            response.EnsureSuccessStatusCode();
+        }
 
         var responseString = await response.Content.ReadAsStringAsync();
         var responseJson = JsonDocument.Parse(responseString);
