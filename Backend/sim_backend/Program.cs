@@ -8,7 +8,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:5173", "https://interview-challenge-simulator.igormp-dev.workers.dev")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -25,6 +25,8 @@ builder.Services.AddHttpClient<GeminiService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<ChatService>();
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
