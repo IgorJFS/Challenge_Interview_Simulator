@@ -14,9 +14,5 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build-env /app/out .
+CMD ASPNETCORE_URLS=http://+:$PORT dotnet sim_backend.dll
 
-# Expose port 5138 (matches development configuration and frontend expectation)
-EXPOSE 5138
-ENV ASPNETCORE_URLS=http://+:5138
-
-ENTRYPOINT ["dotnet", "sim_backend.dll"]
