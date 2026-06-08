@@ -8,7 +8,9 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "https://interview-challenge-simulator.igormp-dev.workers.dev")
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "https://interview-challenge-simulator.igormp-dev.workers.dev")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -18,8 +20,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+var connectionString = !string.IsNullOrEmpty(databaseUrl)
+    ? BuildNpgsqlConnectionString(databaseUrl)
+    : builder.Configuration.GetConnectionString("DefaultConnection")!;
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddHttpClient<GeminiService>();
 builder.Services.AddScoped<SessionService>();
@@ -38,7 +45,6 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 app.MapControllers();
 
-// Apply migrations on startup with a retry mechanism for database readiness in containerized environments
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -56,15 +62,26 @@ using (var scope = app.Services.CreateScope())
         }
         catch (Exception ex)
         {
-            logger.LogWarning("Database migration attempt {Attempt} failed. SQL Server might not be ready yet. Retrying in 5 seconds...", retry + 1);
+            logger.LogWarning("Database migration attempt {Attempt} failed. Retrying in 5 seconds...", retry + 1);
             if (retry == 5)
             {
                 logger.LogError(ex, "Database migrations failed after maximum retries.");
                 throw;
             }
-            System.Threading.Thread.Sleep(5000);
+            Thread.Sleep(5000);
         }
     }
 }
 
 app.Run();
+
+// Converte URI estilo postgresql:// para formato aceito pelo Npgsql
+static string BuildNpgsqlConnectionString(string databaseUrl)
+{
+    var uri   = new Uri(databaseUrl);
+    var parts = uri.UserInfo.Split(':');
+    return $"Host={uri.Host};Port={uri.Port};"
+         + $"Database={uri.AbsolutePath.TrimStart('/')};"
+         + $"Username={parts[0]};Password={parts[1]};"
+         + "SSL Mode=Require;Trust Server Certificate=true";
+}
