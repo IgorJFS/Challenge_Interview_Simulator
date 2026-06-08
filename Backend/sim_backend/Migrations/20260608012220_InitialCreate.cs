@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,17 +16,18 @@ namespace sim_backend.Migrations
                 name: "Sessions",
                 columns: table => new
                 {
-                    SessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    JobRole = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BuggyCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FixedCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BugExplanation = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Stage1StartedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Stage1SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Stage2StartedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Stage2EndedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    SessionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    JobRole = table.Column<string>(type: "text", nullable: false),
+                    Language = table.Column<string>(type: "text", nullable: false),
+                    BuggyCode = table.Column<string>(type: "text", nullable: false),
+                    FixedCode = table.Column<string>(type: "text", nullable: false),
+                    BugExplanation = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Stage1StartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Stage1SubmittedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Stage2StartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Stage2EndedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -36,13 +38,13 @@ namespace sim_backend.Migrations
                 name: "ChatMessages",
                 columns: table => new
                 {
-                    MessageId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    SessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SenderName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MessageContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsFromCandidate = table.Column<bool>(type: "bit", nullable: false),
-                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    MessageId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    SessionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SenderName = table.Column<string>(type: "text", nullable: false),
+                    MessageContent = table.Column<string>(type: "text", nullable: false),
+                    IsFromCandidate = table.Column<bool>(type: "boolean", nullable: false),
+                    SentAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -59,12 +61,12 @@ namespace sim_backend.Migrations
                 name: "Submissions",
                 columns: table => new
                 {
-                    SubmissionId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    SessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CandidateCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CandidateExplanation = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    SubmissionId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    SessionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CandidateCode = table.Column<string>(type: "text", nullable: false),
+                    CandidateExplanation = table.Column<string>(type: "text", nullable: false),
+                    SubmittedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
