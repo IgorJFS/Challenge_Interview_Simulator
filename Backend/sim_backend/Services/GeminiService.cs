@@ -11,7 +11,7 @@ public class GeminiService
     public GeminiService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
-        _apiKey = configuration["Gemini:ApiKey"];
+        _apiKey = configuration["Gemini:ApiKey"] ?? configuration["GEMINI_API_KEY"];
     }
 
     public async Task<(string BuggyCode, string FixedCode, string BugExplanation)> GenerateBugChallengeAsync(string jobRole, string language, string? customApiKey = null)

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace sim_backend.Controllers;
 
@@ -16,7 +16,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public IActionResult Login([FromBody] string password)
     {
-        var correctPassword = _configuration["Auth:Password"];
+        var correctPassword = _configuration["Auth:Password"] ?? _configuration["AUTH_PASSWORD"];
         if (password != correctPassword)
             return Unauthorized();
 
