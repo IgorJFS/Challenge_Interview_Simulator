@@ -1,0 +1,23 @@
+# Ignore Backend build outputs
+Backend/sim_backend/bin/
+Backend/sim_backend/obj/
+
+# Ignore Frontend build outputs and dependencies
+Frontend/node_modules/
+Frontend/dist/
+
+# Ignore local configuration and secrets
+.env
+.env.*
+Backend/sim_backend/appsettings.Development.json
+Backend/sim_backend/appsettings.Local.json
+Backend/sim_backend/*.local.json
+
+# Ignore IDE files
+.vs/
+.vscode/
+.idea/
+
+# Ignore git
+.git
+.github
